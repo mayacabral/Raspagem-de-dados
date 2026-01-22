@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+import sqlite3
 
 
 url = 'https://www.idealsoftwares.com.br/indices/ipca_ibge.html'
@@ -26,4 +27,22 @@ for row in texto.find_all('tr')[1:]:
         if valor:
             ipca_data.append((data, valor))
 
-print(ipca_data)
+conn = sqlite3.connect('ipca_data.db')
+cursor = conn.cursor()
+
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS ipca (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          valor REAL,
+          data TEXT    
+    
+    )''')
+
+for data in ipca_data:
+    valor, data = data
+    cursor.execute('INSERT INTO ipca (data, valor) VALUES (?, ?)', (data, valor))
+
+conn.commit()
+conn.close()
+
+print("Deu bom! Confia")
